@@ -60,6 +60,21 @@ describe('OdsayClient.transitTime', () => {
     expect(res.transfers).toBe(1); // 그 경로 기준 (2대 - 1)
   });
 
+  it('시간이 조금 짧아도 환승이 많으면 페널티로 걸러진다', async () => {
+    // A: 40분 환승3 (점수 40+15=55) vs B: 46분 환승0 (점수 46) → B 선택
+    mockFetchOnce({
+      result: {
+        path: [
+          { info: { totalTime: 40, busTransitCount: 0, subwayTransitCount: 4 } },
+          { info: { totalTime: 46, busTransitCount: 0, subwayTransitCount: 1 } },
+        ],
+      },
+    });
+    const res = await client.transitTime(from, to);
+    expect(res.minutes).toBe(46);
+    expect(res.transfers).toBe(0);
+  });
+
   it('경로가 없으면 noRoute=true', async () => {
     mockFetchOnce({ error: { code: '-98', message: '경로 없음' } });
     const res = await client.transitTime(from, to);

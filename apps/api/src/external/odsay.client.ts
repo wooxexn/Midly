@@ -26,6 +26,15 @@ interface OdsayResponse {
 // ODsay 에러 코드: '3' = 출발/도착이 너무 가까움(도보권)
 const TOO_CLOSE_CODE = '3';
 const WALKABLE_MINUTES = 3;
+// 경로 선택 시 환승 1회를 소요시간 몇 분과 동등하게 볼지(페널티). 표시값은 실제 시간·환승.
+const TRANSFER_PENALTY_MIN = 5;
+
+function countTransfers(info: OdsayPathInfo): number {
+  return Math.max(
+    0,
+    (info.busTransitCount ?? 0) + (info.subwayTransitCount ?? 0) - 1,
+  );
+}
 
 @Injectable()
 export class OdsayClient {
@@ -54,16 +63,20 @@ export class OdsayClient {
 
     const paths = data.result?.path;
     if (paths && paths.length > 0) {
-      // ODsay는 path 순서를 최소 소요시간으로 보장하지 않으므로 가장 빠른 경로를 직접 고른다.
-      const best = paths.reduce((a, b) =>
-        a.info.totalTime <= b.info.totalTime ? a : b,
-      );
-      const info = best.info;
-      const transfers = Math.max(
-        0,
-        (info.busTransitCount ?? 0) + (info.subwayTransitCount ?? 0) - 1,
-      );
-      return { minutes: Math.round(info.totalTime), transfers, noRoute: false };
+      // ODsay는 path 순서를 정렬해주지 않는다. "소요시간 + 환승×페널티"가 최소인 경로를
+      // 고르되, 표시값은 그 경로의 실제 시간·환승을 그대로 사용한다.
+      const best = paths.reduce((a, b) => {
+        const scoreA =
+          a.info.totalTime + countTransfers(a.info) * TRANSFER_PENALTY_MIN;
+        const scoreB =
+          b.info.totalTime + countTransfers(b.info) * TRANSFER_PENALTY_MIN;
+        return scoreA <= scoreB ? a : b;
+      });
+      return {
+        minutes: Math.round(best.info.totalTime),
+        transfers: countTransfers(best.info),
+        noRoute: false,
+      };
     }
 
     // 에러 처리
