@@ -1,0 +1,57 @@
+// Midly DB 스키마 (PostgreSQL)
+// 설계 ② 데이터 모델: Room / Participant / Result
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // 풀드 연결 (앱 런타임)
+  directUrl = env("DIRECT_URL") // 직접 연결 (마이그레이션)
+}
+
+model Room {
+  id           String        @id @default(cuid())
+  code         String        @unique // 링크용 짧은 코드
+  title        String? // "주말 스터디 모임" (선택)
+  status       RoomStatus    @default(COLLECTING)
+  participants Participant[]
+  result       Result? // 계산 결과 (1:1, 재계산 시 덮어씀)
+  createdAt    DateTime      @default(now())
+  expiresAt    DateTime // 생성 후 일정 기간 뒤 자동 만료
+
+  @@index([expiresAt])
+}
+
+enum RoomStatus {
+  COLLECTING // 참여자 위치 수집 중
+  COMPUTED // 중간지점 계산 완료
+}
+
+model Participant {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  nickname    String
+  originLabel String // 입력한 출발지 텍스트 "강남역"
+  lat         Float
+  lng         Float
+  createdAt   DateTime @default(now())
+
+  @@index([roomId])
+}
+
+model Result {
+  id         String   @id @default(cuid())
+  roomId     String   @unique
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  centerLat  Float // 참고용 지리적 중심
+  centerLng  Float
+  chosenName String // 최종 추천 거점 "홍대입구역"
+  chosenLat  Float
+  chosenLng  Float
+  travels    Json // 참여자별 소요시간 [{participantId, nickname, minutes, transfers, noRoute?}]
+  places     Json // 근처 추천 장소 [{name, category, lat, lng, url}]
+  computedAt DateTime @default(now())
+}
