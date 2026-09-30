@@ -96,7 +96,8 @@ export function CollectingView({
         )}
         {compute.isError && (
           <p className="mt-2 text-center text-sm text-spot">
-            계산에 실패했어요. 잠시 후 다시 시도해 주세요.
+            {(compute.error as Error)?.message ??
+              '계산에 실패했어요. 잠시 후 다시 시도해 주세요.'}
           </p>
         )}
       </section>
