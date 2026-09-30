@@ -2,6 +2,15 @@
  * Midly 공유 타입 — 프론트(web)와 백엔드(api)가 동일하게 사용한다.
  */
 
+// ── 도메인 상수 ─────────────────────────────────────────
+
+/** 방 최대 참여 인원 (ODsay 호출 예산 보호) */
+export const MAX_PARTICIPANTS = 8;
+/** 중간지점 계산에 필요한 최소 인원 */
+export const MIN_PARTICIPANTS_TO_COMPUTE = 2;
+/** 방 유효 기간(일) */
+export const ROOM_TTL_DAYS = 30;
+
 /** 방 상태 */
 export type RoomStatus = 'COLLECTING' | 'COMPUTED';
 
