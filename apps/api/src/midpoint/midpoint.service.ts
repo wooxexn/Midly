@@ -23,7 +23,8 @@ import { OdsayClient } from '../external/odsay.client';
 import { centroid, chooseBestIndex } from './midpoint.algorithm';
 import { toRoomDto } from '../rooms/room.mapper';
 
-const MAX_CANDIDATES = 5;
+// ODsay 호출 = 후보 수 × 참여자 수. 무료 할당량(일 30건)을 고려해 후보를 3개로 제한.
+const MAX_CANDIDATES = 3;
 const CANDIDATE_RADII = [2000, 5000, 10000, 20000]; // m, 순차 확장
 const PLACE_RADIUS = 800; // m
 const PLACES_PER_CATEGORY = 3;
@@ -59,6 +60,10 @@ export class MidpointService {
     });
     if (!room || room.expiresAt.getTime() < Date.now()) {
       throw new NotFoundException('모임을 찾을 수 없거나 만료되었어요.');
+    }
+    // 이미 계산된 방은 외부 API 재호출 없이 캐시 결과를 반환한다 (호출 절약).
+    if (room.status === 'COMPUTED' && room.result) {
+      return toRoomDto(room);
     }
     if (room.participants.length < MIN_PARTICIPANTS_TO_COMPUTE) {
       throw new BadRequestException(

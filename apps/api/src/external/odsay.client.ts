@@ -32,9 +32,13 @@ export class OdsayClient {
   private readonly logger = new Logger(OdsayClient.name);
   private readonly baseUrl = 'https://api.odsay.com/v1/api';
   private readonly key: string;
+  // ODsay 웹서비스 키는 등록한 URI를 Referer로 검사하므로, 서버 호출 시 이를 맞춰 보낸다.
+  private readonly referer: string;
 
   constructor(config: ConfigService) {
     this.key = config.get<string>('ODSAY_API_KEY') ?? '';
+    this.referer =
+      config.get<string>('WEB_ORIGIN') ?? 'http://localhost:3000';
   }
 
   /** 출발지 → 도착지 대중교통 소요시간(분)과 환승 횟수 */
@@ -44,7 +48,9 @@ export class OdsayClient {
       `?SX=${from.lng}&SY=${from.lat}&EX=${to.lng}&EY=${to.lat}` +
       `&apiKey=${encodeURIComponent(this.key)}`;
 
-    const data = await fetchJson<OdsayResponse>(url);
+    const data = await fetchJson<OdsayResponse>(url, {
+      headers: { Referer: this.referer },
+    });
 
     const path = data.result?.path;
     if (path && path.length > 0) {
