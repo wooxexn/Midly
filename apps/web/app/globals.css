@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+    /* iOS 안전영역 + 모바일 100vh 보정 */
+    min-height: 100dvh;
+  }
+
+  /* 숫자·라벨은 Space Grotesk의 tabular 느낌으로 */
+  .font-data {
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-data text-xs font-medium uppercase tracking-[0.18em] text-muted;
+  }
+
+  .card-surface {
+    @apply rounded-2xl bg-card shadow-card;
+  }
+}
+
+@layer utilities {
+  .safe-b {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
