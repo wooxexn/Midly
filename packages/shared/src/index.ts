@@ -133,6 +133,11 @@ export interface GeoSearchResult {
   lng: number;
 }
 
+/** 좌표 → 주소 라벨 (역지오코딩) 결과 */
+export interface GeoReverseResult {
+  label: string;
+}
+
 // ── 에러 응답 (표준) ────────────────────────────────────
 
 export interface ApiErrorRes {

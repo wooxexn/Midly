@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { GeoSearchResult } from '@midly/shared';
+import type { GeoReverseResult, GeoSearchResult } from '@midly/shared';
 import { KakaoClient } from '../external/kakao.client';
 
 @Injectable()
@@ -18,5 +18,14 @@ export class GeoService {
       lat: Number(p.y),
       lng: Number(p.x),
     }));
+  }
+
+  /** 좌표 → 주소 라벨 (현재 위치용) */
+  async reverse(lat: number, lng: number): Promise<GeoReverseResult> {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return { label: '내 위치' };
+    }
+    const label = await this.kakao.coord2address(lng, lat);
+    return { label: label ?? '내 위치' };
   }
 }

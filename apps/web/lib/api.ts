@@ -3,6 +3,7 @@ import type {
   ApiErrorRes,
   CreateRoomReq,
   CreateRoomRes,
+  GeoReverseResult,
   GeoSearchResult,
   RoomDto,
 } from '@midly/shared';
@@ -73,4 +74,7 @@ export const api = {
 
   geoSearch: (q: string) =>
     request<GeoSearchResult[]>(`/geo/search?q=${encodeURIComponent(q)}`),
+
+  geoReverse: (lat: number, lng: number) =>
+    request<GeoReverseResult>(`/geo/reverse?lat=${lat}&lng=${lng}`),
 };

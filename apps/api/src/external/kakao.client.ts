@@ -50,6 +50,21 @@ export class KakaoClient {
     return data.documents ?? [];
   }
 
+  /** 좌표 → 주소 라벨 (역지오코딩). 도로명 우선, 없으면 지번, 둘 다 없으면 null */
+  async coord2address(lng: number, lat: number): Promise<string | null> {
+    const url = `${this.baseUrl}/geo/coord2address.json?x=${lng}&y=${lat}`;
+    const data = await fetchJson<{
+      documents: {
+        road_address?: { address_name: string } | null;
+        address?: { address_name: string } | null;
+      }[];
+    }>(url, { headers: this.headers() });
+    const doc = data.documents?.[0];
+    return (
+      doc?.road_address?.address_name ?? doc?.address?.address_name ?? null
+    );
+  }
+
   /** 카테고리(지하철역/카페/음식점)를 좌표 반경 내에서 거리순 검색 */
   async searchCategory(
     categoryCode: string,
