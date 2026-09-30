@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { GeoModule } from './geo/geo.module';
+import { MidpointModule } from './midpoint/midpoint.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { GeoModule } from './geo/geo.module';
     PrismaModule,
     RoomsModule,
     GeoModule,
+    MidpointModule,
   ],
   controllers: [AppController],
 })
