@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ConvergeRoutes } from '@/components/ConvergeRoutes';
 import { Button } from '@/components/ui/Button';
@@ -14,11 +13,10 @@ const STEPS = [
 
 export default function Home() {
   const router = useRouter();
-  const [title, setTitle] = useState('');
   const createRoom = useCreateRoom();
 
   const onCreate = () => {
-    createRoom.mutate(title.trim() || undefined, {
+    createRoom.mutate(undefined, {
       onSuccess: ({ code }) => router.push(`/room/${code}`),
     });
   };
@@ -57,18 +55,9 @@ export default function Home() {
       </div>
 
       <div
-        className="animate-fade-up mt-8 space-y-3"
+        className="animate-fade-up mt-8 space-y-2"
         style={{ opacity: 0, animationDelay: '0.35s' }}
       >
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="모임 이름 (선택) — 예: 주말 스터디"
-          maxLength={50}
-          className="h-12 w-full rounded-xl border border-hairline bg-card px-4 text-sm
-                     placeholder:text-muted/70 focus:border-brand focus:outline-none
-                     focus:ring-2 focus:ring-brand/20"
-        />
         <Button
           size="lg"
           className="w-full"
@@ -77,6 +66,9 @@ export default function Home() {
         >
           {createRoom.isPending ? '만드는 중…' : '모임 만들기'}
         </Button>
+        <p className="text-center text-xs text-muted">
+          로그인 없이 · 링크로 초대하면 끝
+        </p>
         {createRoom.isError && (
           <p className="text-center text-sm text-spot">
             연결에 실패했어요. 잠시 후 다시 시도해 주세요.
