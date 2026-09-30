@@ -29,6 +29,13 @@ const ROUTES: Route[] = [
     label: '잠실',
     delay: 0.36,
   },
+  {
+    d: 'M360 258 Q 276 212 200 150',
+    color: '#7A5CFF',
+    origin: { x: 360, y: 258 },
+    label: '성수',
+    delay: 0.54,
+  },
 ];
 
 export function ConvergeRoutes({ className }: { className?: string }) {
@@ -88,30 +95,30 @@ export function ConvergeRoutes({ className }: { className?: string }) {
         </g>
       ))}
 
-      {/* 중앙 만남 핀 */}
-      <g style={{ transformOrigin: '200px 150px' }}>
+      {/* 중앙 만남 핀 (위치 핀) — 노선들이 만나는 지점(200,150)에 핀 끝이 닿는다 */}
+      <g>
+        {/* 착지 지점 펄스 */}
         <circle
           cx={200}
           cy={150}
-          r={16}
+          r={11}
           fill="#FF5A47"
           className="animate-pulse-ring"
           style={{ transformOrigin: '200px 150px', animationDelay: '1.1s' }}
-          opacity={0.5}
+          opacity={0.45}
         />
         <g
           className="animate-pin-drop"
           style={{ transformOrigin: '200px 150px', animationDelay: '1s', opacity: 0 }}
         >
-          <circle
-            cx={200}
-            cy={150}
-            r={15}
+          <path
+            d="M200 150 C 191 137, 185 131, 185 123 A 15 15 0 1 1 215 123 C 215 131, 209 137, 200 150 Z"
             fill="#FF5A47"
             stroke="white"
-            strokeWidth={4}
+            strokeWidth={3.5}
+            strokeLinejoin="round"
           />
-          <circle cx={200} cy={150} r={5} fill="white" />
+          <circle cx={200} cy={122} r={5} fill="white" />
         </g>
       </g>
     </svg>

@@ -3,7 +3,7 @@ import { ImageResponse } from 'next/og';
 export const size = { width: 32, height: 32 };
 export const contentType = 'image/png';
 
-// 브랜드 파비콘 — 딥잉크 배경 위 코랄 만남 핀
+// 브랜드 파비콘 — 투명 배경 위 코랄 위치 핀 (밝은 톤 디자인과 통일)
 export default function Icon() {
   return new ImageResponse(
     (
@@ -14,17 +14,16 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#141A2E',
-          borderRadius: 8,
+          background: 'transparent',
         }}
       >
         <div
           style={{
-            width: 15,
-            height: 15,
-            borderRadius: 9999,
+            width: 21,
+            height: 21,
             background: '#FF5A47',
-            border: '3px solid #fff',
+            borderRadius: '11px 11px 0 11px',
+            transform: 'rotate(45deg)',
           }}
         />
       </div>

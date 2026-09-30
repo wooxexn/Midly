@@ -23,9 +23,8 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center">
         <span className="eyebrow">Midly</span>
-        <span className="font-data text-xs text-muted">공평한 중간지점</span>
       </header>
 
       <div className="flex flex-1 flex-col justify-center">
@@ -76,9 +75,9 @@ export default function Home() {
         )}
       </div>
 
-      <ol className="mt-8 flex items-center justify-between">
+      <ol className="mt-8 flex items-start justify-center gap-2">
         {STEPS.map((s, i) => (
-          <li key={s.n} className="flex flex-1 items-center">
+          <li key={s.n} className="flex items-start gap-2">
             <div className="flex flex-col items-center gap-1.5">
               <span
                 className="flex h-7 w-7 items-center justify-center rounded-full font-data text-xs font-bold text-white"
@@ -91,7 +90,7 @@ export default function Home() {
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <span className="mx-1 mb-5 h-0.5 flex-1 rounded-full bg-hairline" />
+              <span className="mt-3.5 h-0.5 w-6 rounded-full bg-hairline" />
             )}
           </li>
         ))}
