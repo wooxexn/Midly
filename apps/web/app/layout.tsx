@@ -3,9 +3,19 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? 'https://midly-mu.vercel.app',
+  ),
   title: 'Midly — 공평한 중간지점 찾기',
   description:
     '흩어진 친구들·스터디원들이 대중교통 기준 가장 공평하게 모일 중간지점을 찾아줍니다.',
+  openGraph: {
+    title: 'Midly — 공평한 중간지점 찾기',
+    description: '출발지만 넣으면 모두에게 공평한 만날 곳을 찾아드려요.',
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: 'Midly',
+  },
 };
 
 export const viewport: Viewport = {
