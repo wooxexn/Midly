@@ -75,6 +75,44 @@ describe('OdsayClient.transitTime', () => {
     expect(res.transfers).toBe(0);
   });
 
+  it('subPath를 구간(legs)으로 파싱한다 (수도권 접두어 제거·버스번호·0분 도보 제외)', async () => {
+    mockFetchOnce({
+      result: {
+        path: [
+          {
+            info: { totalTime: 30, subwayTransitCount: 2 },
+            subPath: [
+              { trafficType: 3, sectionTime: 3 },
+              {
+                trafficType: 1,
+                sectionTime: 12,
+                stationCount: 6,
+                startName: '강남',
+                endName: '사당',
+                lane: [{ name: '수도권 2호선' }],
+              },
+              {
+                trafficType: 2,
+                sectionTime: 10,
+                stationCount: 4,
+                startName: '사당',
+                endName: '이촌',
+                lane: [{ busNo: '761' }],
+              },
+              { trafficType: 3, sectionTime: 0 },
+            ],
+          },
+        ],
+      },
+    });
+    const res = await client.transitTime(from, to);
+    expect(res.legs).toEqual([
+      { type: 'walk', minutes: 3 },
+      { type: 'subway', line: '2호선', from: '강남', to: '사당', minutes: 12, stations: 6 },
+      { type: 'bus', line: '761번', from: '사당', to: '이촌', minutes: 10, stations: 4 },
+    ]);
+  });
+
   it('경로가 없으면 noRoute=true', async () => {
     mockFetchOnce({ error: { code: '-98', message: '경로 없음' } });
     const res = await client.transitTime(from, to);

@@ -67,6 +67,24 @@ export interface RoomDto {
 
 // ── 계산 결과 ───────────────────────────────────────────
 
+/** 경로 구간 종류 */
+export type LegType = 'walk' | 'bus' | 'subway';
+
+/** 경로 상세의 한 구간 */
+export interface RouteLeg {
+  type: LegType;
+  /** 노선명 (지하철: "2호선", 버스: "761번"). 도보는 없음 */
+  line?: string;
+  /** 승차 정류장/역 */
+  from?: string;
+  /** 하차 정류장/역 */
+  to?: string;
+  /** 구간 소요(분) */
+  minutes: number;
+  /** 정거장 수 (지하철·버스) */
+  stations?: number;
+}
+
 /** 참여자별 이동시간 */
 export interface TravelDto {
   participantId: string;
@@ -75,6 +93,8 @@ export interface TravelDto {
   transfers: number;
   /** 대중교통 경로를 찾지 못한 경우 true */
   noRoute?: boolean;
+  /** 구간별 상세 경로 */
+  legs?: RouteLeg[];
 }
 
 /** 근처 추천 장소 */

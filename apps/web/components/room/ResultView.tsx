@@ -108,19 +108,34 @@ function TravelRow({
   color: string;
   maxMinutes: number;
 }) {
+  const [open, setOpen] = useState(false);
+  const hasLegs = !travel.noRoute && (travel.legs?.length ?? 0) > 0;
   const pct = travel.noRoute
     ? 0
     : Math.max(8, Math.round((travel.minutes / maxMinutes) * 100));
 
   return (
     <li>
-      <div className="mb-1.5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => hasLegs && setOpen((v) => !v)}
+        disabled={!hasLegs}
+        aria-expanded={hasLegs ? open : undefined}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <div className="flex items-center gap-1.5">
           <span
             className="h-3 w-3 rounded-full"
             style={{ backgroundColor: color }}
           />
           <span className="text-sm font-semibold">{travel.nickname}</span>
+          {hasLegs && (
+            <span
+              className={`text-[10px] text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+            >
+              ▾
+            </span>
+          )}
         </div>
         {travel.noRoute ? (
           <span className="text-sm font-medium text-spot">경로 없음</span>
@@ -135,14 +150,57 @@ function TravelRow({
             </span>
           </div>
         )}
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-hairline">
+      </button>
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
+      {open && hasLegs && <LegList legs={travel.legs!} color={color} />}
     </li>
+  );
+}
+
+function LegList({
+  legs,
+  color,
+}: {
+  legs: NonNullable<TravelDto['legs']>;
+  color: string;
+}) {
+  const icon = (type: string) =>
+    type === 'walk' ? '🚶' : type === 'bus' ? '🚌' : '🚇';
+
+  return (
+    <ul
+      className="ml-1 mt-3 flex flex-col gap-2.5 border-l-2 pl-3.5"
+      style={{ borderColor: `${color}33` }}
+    >
+      {legs.map((leg, i) => (
+        <li key={i} className="flex items-start gap-2 text-xs leading-snug">
+          <span className="mt-px shrink-0">{icon(leg.type)}</span>
+          {leg.type === 'walk' ? (
+            <span className="text-muted">
+              도보 <span className="font-data font-semibold text-ink">{leg.minutes}분</span>
+            </span>
+          ) : (
+            <span className="text-ink">
+              <span className="font-semibold">{leg.line}</span>
+              {leg.from && leg.to && (
+                <span className="text-muted">
+                  {' '}
+                  · {leg.from} → {leg.to}
+                </span>
+              )}
+              {leg.stations ? (
+                <span className="text-muted"> ({leg.stations}정거장)</span>
+              ) : null}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
 

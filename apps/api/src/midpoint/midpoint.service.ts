@@ -134,6 +134,7 @@ export class MidpointService {
             minutes: t.minutes,
             transfers: t.transfers,
             noRoute: t.noRoute,
+            legs: t.legs,
           };
         }),
       );

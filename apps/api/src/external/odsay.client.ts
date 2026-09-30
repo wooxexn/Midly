@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { LatLng } from '@midly/shared';
+import type { LatLng, RouteLeg } from '@midly/shared';
 import { fetchJson } from './http.util';
 
 export interface TransitResult {
@@ -8,6 +8,8 @@ export interface TransitResult {
   transfers: number;
   /** 대중교통 경로를 찾지 못한 경우 */
   noRoute: boolean;
+  /** 구간별 상세 경로 */
+  legs: RouteLeg[];
 }
 
 interface OdsayPathInfo {
@@ -16,11 +18,52 @@ interface OdsayPathInfo {
   subwayTransitCount?: number;
 }
 
+interface OdsaySubPath {
+  trafficType: number; // 1 지하철, 2 버스, 3 도보
+  sectionTime?: number;
+  stationCount?: number;
+  startName?: string;
+  endName?: string;
+  lane?: { name?: string; busNo?: string }[];
+}
+
+interface OdsayPath {
+  info: OdsayPathInfo;
+  subPath?: OdsaySubPath[];
+}
+
 interface OdsayResponse {
   result?: {
-    path?: { info: OdsayPathInfo }[];
+    path?: OdsayPath[];
   };
   error?: { code?: string; message?: string } | { code?: string }[];
+}
+
+/** ODsay subPath를 표시용 구간 목록으로 변환 (0분 도보 구간은 제외) */
+function toLegs(subPaths: OdsaySubPath[]): RouteLeg[] {
+  return subPaths
+    .map((s): RouteLeg => {
+      const minutes = Math.round(s.sectionTime ?? 0);
+      if (s.trafficType === 3) {
+        return { type: 'walk', minutes };
+      }
+      const isSubway = s.trafficType === 1;
+      const lane = s.lane?.[0];
+      const line = isSubway
+        ? (lane?.name ?? '지하철').replace(/^수도권\s*/, '')
+        : lane?.busNo
+          ? `${lane.busNo}번`
+          : '버스';
+      return {
+        type: isSubway ? 'subway' : 'bus',
+        line,
+        from: s.startName,
+        to: s.endName,
+        minutes,
+        stations: s.stationCount,
+      };
+    })
+    .filter((leg) => !(leg.type === 'walk' && leg.minutes === 0));
 }
 
 // ODsay 에러 코드: '3' = 출발/도착이 너무 가까움(도보권)
@@ -76,6 +119,7 @@ export class OdsayClient {
         minutes: Math.round(best.info.totalTime),
         transfers: countTransfers(best.info),
         noRoute: false,
+        legs: toLegs(best.subPath ?? []),
       };
     }
 
@@ -83,13 +127,18 @@ export class OdsayClient {
     const errorCode = this.extractErrorCode(data.error);
     if (errorCode === TOO_CLOSE_CODE) {
       // 너무 가까우면 도보권으로 간주
-      return { minutes: WALKABLE_MINUTES, transfers: 0, noRoute: false };
+      return {
+        minutes: WALKABLE_MINUTES,
+        transfers: 0,
+        noRoute: false,
+        legs: [{ type: 'walk', minutes: WALKABLE_MINUTES }],
+      };
     }
 
     this.logger.warn(
       `ODsay 경로 없음 (code=${errorCode ?? 'unknown'}) ${JSON.stringify(from)}→${JSON.stringify(to)}`,
     );
-    return { minutes: 0, transfers: 0, noRoute: true };
+    return { minutes: 0, transfers: 0, noRoute: true, legs: [] };
   }
 
   private extractErrorCode(error: OdsayResponse['error']): string | undefined {
