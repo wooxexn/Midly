@@ -1,0 +1,31 @@
+# Render Blueprint — Midly API (NestJS)
+# Render 대시보드에서 New → Blueprint → 이 저장소 연결 시 자동 인식됩니다.
+services:
+  - type: web
+    name: midly-api
+    runtime: node
+    plan: free
+    region: singapore # Neon(ap-southeast-1)과 동일 리전으로 DB 지연 최소화
+    healthCheckPath: /api/health
+    buildCommand: >-
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @midly/shared build &&
+      pnpm --filter api exec prisma generate &&
+      pnpm --filter api build
+    startCommand: >-
+      pnpm --filter api exec prisma migrate deploy &&
+      node apps/api/dist/main.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # 아래 값들은 Render 대시보드에서 직접 입력 (비밀값)
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: KAKAO_REST_API_KEY
+        sync: false
+      - key: ODSAY_API_KEY
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
