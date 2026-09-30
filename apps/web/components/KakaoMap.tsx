@@ -18,6 +18,19 @@ export interface MapPoint {
 const KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
 let sdkPromise: Promise<void> | null = null;
 
+const ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+// 오버레이 content는 innerHTML로 삽입되므로 사용자 입력(닉네임 등)을 반드시 이스케이프한다.
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ESCAPE_MAP[c]);
+}
+
 function loadSdk(): Promise<void> {
   if (window.kakao?.maps) return Promise.resolve();
   if (sdkPromise) return sdkPromise;
@@ -33,15 +46,17 @@ function loadSdk(): Promise<void> {
 }
 
 function originHtml(label?: string, color = '#2B44FF'): string {
+  const safe = label ? escapeHtml(label) : '';
   return `<div style="transform:translateY(50%);display:flex;align-items:center;gap:6px;">
     <span style="width:14px;height:14px;border-radius:9999px;background:${color};border:3px solid #fff;box-shadow:0 2px 6px rgba(20,26,46,.25);"></span>
-    ${label ? `<span style="font:600 12px Pretendard,sans-serif;color:#141A2E;background:#fff;padding:2px 8px;border-radius:9999px;box-shadow:0 2px 6px rgba(20,26,46,.15);white-space:nowrap;">${label}</span>` : ''}
+    ${safe ? `<span style="font:600 12px Pretendard,sans-serif;color:#141A2E;background:#fff;padding:2px 8px;border-radius:9999px;box-shadow:0 2px 6px rgba(20,26,46,.15);white-space:nowrap;">${safe}</span>` : ''}
   </div>`;
 }
 
 function spotHtml(label?: string): string {
+  const safe = label ? escapeHtml(label) : '';
   return `<div style="transform:translateY(-4px);display:flex;flex-direction:column;align-items:center;">
-    ${label ? `<span style="font:700 13px Pretendard,sans-serif;color:#fff;background:#FF5A47;padding:4px 10px;border-radius:9999px;box-shadow:0 6px 16px rgba(255,90,71,.5);white-space:nowrap;margin-bottom:4px;">${label}</span>` : ''}
+    ${safe ? `<span style="font:700 13px Pretendard,sans-serif;color:#fff;background:#FF5A47;padding:4px 10px;border-radius:9999px;box-shadow:0 6px 16px rgba(255,90,71,.5);white-space:nowrap;margin-bottom:4px;">${safe}</span>` : ''}
     <span style="width:24px;height:24px;border-radius:9999px 9999px 9999px 2px;background:#FF5A47;border:4px solid #fff;box-shadow:0 8px 20px rgba(255,90,71,.45);transform:rotate(45deg);"></span>
   </div>`;
 }
