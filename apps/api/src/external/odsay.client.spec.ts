@@ -45,6 +45,21 @@ describe('OdsayClient.transitTime', () => {
     expect(res.transfers).toBe(0);
   });
 
+  it('path[0]이 최단이 아니어도 가장 빠른 경로를 선택한다', async () => {
+    // ODsay는 path 순서를 최소시간으로 보장하지 않는다.
+    mockFetchOnce({
+      result: {
+        path: [
+          { info: { totalTime: 88, busTransitCount: 1, subwayTransitCount: 4 } },
+          { info: { totalTime: 82, busTransitCount: 2, subwayTransitCount: 0 } },
+        ],
+      },
+    });
+    const res = await client.transitTime(from, to);
+    expect(res.minutes).toBe(82); // path[1]이 더 빠름
+    expect(res.transfers).toBe(1); // 그 경로 기준 (2대 - 1)
+  });
+
   it('경로가 없으면 noRoute=true', async () => {
     mockFetchOnce({ error: { code: '-98', message: '경로 없음' } });
     const res = await client.transitTime(from, to);

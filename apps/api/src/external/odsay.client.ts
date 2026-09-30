@@ -52,9 +52,13 @@ export class OdsayClient {
       headers: { Referer: this.referer },
     });
 
-    const path = data.result?.path;
-    if (path && path.length > 0) {
-      const info = path[0].info;
+    const paths = data.result?.path;
+    if (paths && paths.length > 0) {
+      // ODsay는 path 순서를 최소 소요시간으로 보장하지 않으므로 가장 빠른 경로를 직접 고른다.
+      const best = paths.reduce((a, b) =>
+        a.info.totalTime <= b.info.totalTime ? a : b,
+      );
+      const info = best.info;
       const transfers = Math.max(
         0,
         (info.busTransitCount ?? 0) + (info.subwayTransitCount ?? 0) - 1,
