@@ -54,7 +54,7 @@ describe('RoomsService', () => {
 
       const res = await service.create({});
 
-      expect(res.code).toHaveLength(6);
+      expect(res.code).toHaveLength(8);
       expect(prisma.room.create).toHaveBeenCalledTimes(1);
       const { data } = prisma.room.create.mock.calls[0][0];
       expect(data.code).toBe(res.code);

@@ -1,0 +1,15 @@
+name: keep-warm
+
+# Render 무료 플랜은 15분 유휴 시 슬립 → 14분마다 health를 핑해 깨워둔다.
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API health
+        run: |
+          curl -sS --max-time 60 https://midly-api.onrender.com/api/health || true

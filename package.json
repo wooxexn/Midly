@@ -16,5 +16,10 @@
   "devDependencies": {
     "turbo": "^2.5.0",
     "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "qs": ">=6.16.0"
+    }
   }
 }
