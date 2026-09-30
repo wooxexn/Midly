@@ -16,8 +16,8 @@
 
 | 영역 | 기술 |
 |---|---|
-| 프론트엔드 | Next.js (App Router), TypeScript, Tailwind CSS, TanStack Query |
-| 백엔드 | NestJS, Prisma |
+| 프론트엔드 | Next.js 15 (App Router), TypeScript, Tailwind CSS, TanStack Query |
+| 백엔드 | NestJS 10, Prisma |
 | DB | PostgreSQL (Neon) |
 | 외부 API | Kakao Maps(지도·장소검색), ODsay(대중교통 경로) |
 | 모노레포 | pnpm workspaces + Turborepo |
@@ -33,11 +33,65 @@ midly/
    └─ shared/  # 공유 TypeScript 타입
 ```
 
-## 개발
+## 시작하기
+
+### 1. 의존성 설치
 
 ```bash
 pnpm install
-pnpm dev        # web + api 동시 실행
 ```
 
-환경 변수는 각 앱의 `.env.example`를 참고해 `.env`를 채워주세요. (Kakao / ODsay API 키, DATABASE_URL 등)
+### 2. API 키 발급
+
+| 키 | 용도 | 발급처 |
+|---|---|---|
+| Kakao **JavaScript** 키 | 프론트 지도 렌더링 | [developers.kakao.com](https://developers.kakao.com) → 내 애플리케이션 → 앱 키. **플랫폼 → Web에 `http://localhost:3000` 등록** 필요 |
+| Kakao **REST API** 키 | 주소·장소 검색(백엔드) | 같은 앱의 REST API 키 |
+| **ODsay** 키 | 대중교통 소요시간 | [lab.odsay.com](https://lab.odsay.com) → 회원가입 → API 신청 |
+
+### 3. 환경 변수
+
+`apps/api/.env` (예시는 `apps/api/.env.example`):
+
+```
+PORT=4000
+WEB_ORIGIN=http://localhost:3000
+DATABASE_URL="postgresql://...-pooler.../neondb?sslmode=require&pgbouncer=true"
+DIRECT_URL="postgresql://.../neondb?sslmode=require"
+KAKAO_REST_API_KEY=발급받은_REST_키
+ODSAY_API_KEY=발급받은_ODsay_키
+```
+
+`apps/web/.env.local`:
+
+```
+NEXT_PUBLIC_KAKAO_MAP_KEY=발급받은_JavaScript_키
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api
+```
+
+### 4. DB 마이그레이션
+
+```bash
+pnpm --filter api exec prisma migrate deploy   # 기존 마이그레이션 적용
+# 또는 스키마 변경 시: pnpm --filter api exec prisma migrate dev
+```
+
+### 5. 개발 서버 실행
+
+```bash
+pnpm dev        # web(:3000) + api(:4000) 동시 실행
+```
+
+## 스크립트
+
+```bash
+pnpm build      # 전체 빌드 (turbo)
+pnpm test       # 전체 테스트
+pnpm typecheck  # 타입 체크
+```
+
+## 배포 (권장)
+
+- **web** → Vercel (`NEXT_PUBLIC_*` 환경 변수 설정)
+- **api** → Railway/Render (`.env` 값 설정, `prisma migrate deploy`)
+- **DB** → Neon (서버리스 Postgres)
